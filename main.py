@@ -19,6 +19,7 @@ _keys = {
 	pygame.K_7: 7,
 }
 
+
 class Area:
     def __init__(self,
                  size,
@@ -77,13 +78,18 @@ class Display:
     def __init__(self):
         pygame.init()
 
-        self.size = (1000, 400)
+        self.size = (1000, 600)
         self.screen = pygame.display.set_mode(self.size)
-        self.osc = Area(self.size, coord=(10, 257))  # 10ms, 256 values
+        self.osc = Area((1000, 400), coord=(10, 277))  # 10ms, 256 values
 
         self.signal_processor = SignalProcessor(120, True)
 
         self.a = Arduino()
+        self.font = pygame.font.SysFont('Courier New', 15)
+
+    def text(self, point, text, color=(255, 255, 255)):
+        textsurface = self.font.render(text, True, color)
+        self.screen.blit(textsurface, point)
 
     def render(self):
         data, one_measure_time = self.a.read_data()
@@ -101,7 +107,7 @@ class Display:
 
         t = math.log(self.osc.coord[0]) / math.log(10)
         t = int(t)
-        one = 10 ** (t - 1)
+        one = 10 ** (t - 1) / 2
 
         for i in range(-10, 10):
             color = (100, 100, 100) if i else (200, 200, 200)
@@ -109,8 +115,12 @@ class Display:
                           (one * i * 10, 0),
                           (one * i * 10, self.osc.coord[1]))
 
-            self.osc.text((one * i * 10, self.osc.coord[1]),
-                          "{:.1f}".format(one * i / 1000))
+            v = one * i / 100
+            FMT = "{:.1f}"
+            if abs(math.modf(v)[0]) < 0.1 and abs(math.modf(v)[1]) > 1:
+                FMT = "{:.0f}"
+            self.osc.text((one * i * 10 + one /2, self.osc.coord[1]),
+                          FMT.format(v))
 
         it_p = iter(data)
         it_c = iter(data)
@@ -121,10 +131,14 @@ class Display:
                           (j * one_measure_time, p + 1),
                           ((j + 1) * one_measure_time, n + 1))
 
+        self.text((0, 405), "Частота измерения: {}kHz".format(int(signal.hz * 1000)))
+        self.text((0, 430), "Частота сигнала: {:.1f}Hz".format(signal.freq))
+
     def update(self):
         self.screen.blit(self.osc.surface, (0, 0))
         pygame.display.update()
         self.osc.clear()
+        self.screen.fill(BLACK)
 
     def main(self):
         for event in pygame.event.get():
