@@ -12,7 +12,7 @@ void setup()
   UART_Init(256000);
   pinMode(7, OUTPUT);
   pinMode(9, OUTPUT);
-  tone(7, 500);
+  tone(7, 440);
   
   ADMUX=B01100000;   
   delay_us(10);    

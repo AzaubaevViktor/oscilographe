@@ -62,7 +62,6 @@ class Arduino:
         data = self._read(1024)
         tm = self._read(4)
         micros = tm[0] + tm[1] * 256 + tm[2] * 256 * 256 + tm[3] * 256 * 256 * 256
-        print(micros)
 
         return data, micros / 1024
 
