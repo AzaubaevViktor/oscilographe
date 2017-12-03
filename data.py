@@ -6,7 +6,7 @@ import time
 import sys
 
 
-def limmit(value, down, up):
+def limit(value, down, up):
     if value < down:
         return down
     if value > up:
@@ -67,7 +67,7 @@ class Arduino:
         return data, micros / 1024
 
     def set_divider(self, value):
-        value = limmit(int(value), 0, 7)
+        value = limit(int(value), 0, 7)
         print("Set divider to {}".format(value))
         self._write([1, value])
 

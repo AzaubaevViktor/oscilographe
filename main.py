@@ -7,6 +7,16 @@ import sys
 from colors import *
 from data import Arduino
 
+_keys = {
+	pygame.K_0: 0,
+	pygame.K_1: 1,
+	pygame.K_2: 2,
+	pygame.K_3: 3,
+	pygame.K_4: 4,
+	pygame.K_5: 5,
+	pygame.K_6: 6,
+	pygame.K_7: 7,
+}
 
 class Area:
     def __init__(self,
@@ -135,81 +145,9 @@ class Display:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_MINUS: self.sync -= 1
                 if event.key == pygame.K_EQUALS: self.sync += 1
-
-
-class _Display:
-    def __init__(self):
-        pygame.init()
-
-        self.size = (1000, 400)
-        self.screen = pygame.display.set_mode(self.size)
-        self.a = Arduino()
-        self.start = 40
-        self.k = [1, 0.5]
-
-        pygame.font.init()  # you have to call this at the start,
-        # if you want to use this module.
-        self.font = pygame.font.SysFont('Verdana', 20)
-
-    def text(self, pos, text):
-        textsurface = self.font.render(text, True, (255, 255, 255))
-        self.screen.blit(textsurface, pos)
-
-    def find(self, data: List[int]):
-        i = 0
-        while data[i] > self.start:
-            i += 1
-            if i == len(data):
-                return 0
-
-        while data[i] < self.start:
-            i += 1
-            if i == len(data):
-                return 0
-
-        return i
-
-    def line(self, color, a, b):
-        pygame.draw.line(self.screen, color, a, b)
-
-    def render(self):
-        data, one_measure_time = self.a.read_data()
-        if 0 == one_measure_time:
-            return
-        i = self.find(data)
-        data = data[i:]
-
-        it_p = iter(data)
-        it_c = iter(data)
-        next(it_c)
-
-        # draw 
-        ms = 2
-        ms_in_px = ms * 1000 / one_measure_time
-
-        for i in range(10):
-            self.line((100, 100, 100), (ms_in_px * i * self.k[1], 0),
-                      (ms_in_px * i * self.k[1], 400))
-            self.text((ms_in_px * i * self.k[1], 0), str(ms * i))
-
-        self.line((0, 250, 250), (0, (300 - self.start) * self.k[0]),
-                  (1000, (300 - self.start) * self.k[0]))
-
-        for i, (p, n) in enumerate(zip(it_p, it_c)):
-            self.line((0, 255, 0), (i * self.k[1], (300 - p) * self.k[0]),
-                      ((i + 1) * self.k[1], (300 - n) * self.k[0]))
-
-    def update(self):
-        pygame.display.update()
-        pygame.draw.rect(self.screen, (0, 0, 0), (0, 0, *self.size))
-
-    def main(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT: sys.exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_MINUS: self.start -= 1
-                if event.key == pygame.K_EQUALS: self.start += 1
-
+                number = _keys.get(event.key, None)
+                if number:
+                    self.a.set_divider(number)
 
 d = Display()
 
